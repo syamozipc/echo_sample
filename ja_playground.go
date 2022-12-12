@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"reflect"
 
-	ja_translations "github.com/go-playground/validator/v10/translations/ja"
+	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 	"github.com/labstack/echo/v4"
 )
 
@@ -38,7 +38,7 @@ func InitValidator() echo.Validator {
 		}
 		return fieldName
 	})
-	if err := ja_translations.RegisterDefaultTranslations(validate, trans); err != nil {
+	if err := jaTranslations.RegisterDefaultTranslations(validate, trans); err != nil {
 		log.Fatalf(err.Error())
 	}
 
