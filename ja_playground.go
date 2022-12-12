@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/go-playground/locales/ja"
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	"log"
 	"net/http"
 	"reflect"
 
-	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 	"github.com/labstack/echo/v4"
+
+	"github.com/go-playground/locales/ja"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 )
 
 type (
