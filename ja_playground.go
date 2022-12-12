@@ -4,6 +4,7 @@ import (
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"log"
 	"net/http"
 	"reflect"
 
@@ -18,45 +19,51 @@ type (
 	}
 
 	CustomValidator struct {
+		trans     ut.Translator
 		validator *validator.Validate
 	}
 )
 
-var (
-	uni         *ut.UniversalTranslator
-	validateObj *validator.Validate
-	trans       ut.Translator
-)
-
-func Init() {
+func InitValidator() echo.Validator {
 	ja := ja.New()
-	uni = ut.New(ja, ja)
-	t, _ := uni.GetTranslator("ja")
-	trans = t
-	validateObj = validator.New()
-	validateObj.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		fieldName := fld.Tag.Get("ja")
+	uni := ut.New(ja, ja)
+	trans, _ := uni.GetTranslator("ja")
+
+	validate := validator.New()
+
+	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
+		fieldName := field.Tag.Get("ja")
 		if fieldName == "-" {
 			return ""
 		}
 		return fieldName
 	})
-	ja_translations.RegisterDefaultTranslations(validateObj, trans)
+	if err := ja_translations.RegisterDefaultTranslations(validate, trans); err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	return &CustomValidator{
+		trans:     trans,
+		validator: validate,
+	}
 }
 
 func (cv *CustomValidator) Validate(i interface{}) error {
 	if err := cv.validator.Struct(i); err != nil {
+		var messages []string
+		for _, m := range err.(validator.ValidationErrors).Translate(cv.trans) {
+			messages = append(messages, m)
+		}
 		// Optionally, you could return the error to give each route more control over the status code
-		return echo.NewHTTPError(http.StatusBadRequest, GetErrorMessages(err))
+		return echo.NewHTTPError(http.StatusBadRequest, messages)
 	}
 	return nil
 }
 
 func main() {
-	Init()
-
 	e := echo.New()
-	e.Validator = &CustomValidator{validator: validateObj}
+	e.Validator = InitValidator()
+
 	e.POST("/users", func(c echo.Context) (err error) {
 		u := new(User)
 
@@ -70,15 +77,4 @@ func main() {
 		return c.JSON(http.StatusOK, u)
 	})
 	e.Logger.Fatal(e.Start(":1323"))
-}
-
-func GetErrorMessages(err error) []string {
-	if err == nil {
-		return []string{}
-	}
-	var messages []string
-	for _, m := range err.(validator.ValidationErrors).Translate(trans) {
-		messages = append(messages, m)
-	}
-	return messages
 }
