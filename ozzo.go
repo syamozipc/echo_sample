@@ -2,6 +2,7 @@ package main
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -16,7 +17,7 @@ func (u User2) Validate() error {
 		// Streetは空を許容せず、5から50までの長さ
 		validation.Field(&u.Name, validation.Required.Error("名前は必須です"), validation.Length(5, 50).Error("名前は{min}以上{max}以下です")),
 		// Cityは空を許容せず、5から50までの長さ
-		validation.Field(&u.Email, validation.Required, validation.Length(5, 50)),
+		validation.Field(&u.Email, validation.Required.Error("メールアドレスは必須です"), is.Email.Error("正しい形式で入力してください")),
 	)
 }
 
