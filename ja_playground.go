@@ -1,6 +1,7 @@
 package main
 
 import (
+	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 	"log"
 	"net/http"
 	"reflect"
@@ -10,12 +11,11 @@ import (
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 )
 
 type (
 	User struct {
-		Name  string `json:"name" validate:"required" ja:"ユーザー名"`
+		Name  string `json:"name" validate:"required,is-messi,min=1,max=1" ja:"ユーザー名"`
 		Email string `json:"email" validate:"required,email" ja:"メールアドレス"`
 	}
 
@@ -26,9 +26,9 @@ type (
 )
 
 func InitValidator() echo.Validator {
-	ja := ja.New()
-	uni := ut.New(ja, ja)
-	trans, _ := uni.GetTranslator("ja")
+	jaTrans := ja.New()
+	uniTrans := ut.New(jaTrans, jaTrans)
+	trans, _ := uniTrans.GetTranslator("ja")
 
 	validate := validator.New()
 
@@ -39,14 +39,35 @@ func InitValidator() echo.Validator {
 		}
 		return fieldName
 	})
+
 	if err := jaTranslations.RegisterDefaultTranslations(validate, trans); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err)
+	}
+
+	if err := validate.RegisterValidation("is-messi", ValidateIsMessi); err != nil {
+		log.Fatal(err)
+	}
+
+	// カスタムバリデーションの日本語化
+	if err := validate.RegisterTranslation("is-messi", trans, func(ut ut.Translator) error {
+		return ut.Add("is-messi", "名前はmessi以外認めません", true) // see universal-translator for details
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T("is-messi", fe.Field())
+
+		return t
+	}); err != nil {
+		log.Fatal(err)
 	}
 
 	return &CustomValidator{
 		trans:     trans,
 		validator: validate,
 	}
+}
+
+// カスタムバリデーション
+func ValidateIsMessi(fl validator.FieldLevel) bool {
+	return fl.Field().String() == "messi"
 }
 
 func (cv *CustomValidator) Validate(i interface{}) error {
