@@ -22,6 +22,7 @@ func (u User2) Validate() error {
 
 func main() {
 	e := echo.New()
+
 	e.POST("/users", func(c echo.Context) (err error) {
 		u := new(User2)
 
