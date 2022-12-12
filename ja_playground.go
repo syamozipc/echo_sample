@@ -50,7 +50,7 @@ func InitValidator() echo.Validator {
 
 	// カスタムバリデーションの日本語化
 	if err := validate.RegisterTranslation("is-messi", trans, func(ut ut.Translator) error {
-		return ut.Add("is-messi", "名前はmessi以外認めません", true) // see universal-translator for details
+		return ut.Add("is-messi", "{0}はmessi以外認めません", true) // see universal-translator for details
 	}, func(ut ut.Translator, fe validator.FieldError) string {
 		t, _ := ut.T("is-messi", fe.Field())
 
