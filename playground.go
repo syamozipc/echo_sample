@@ -14,7 +14,6 @@ import (
 	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 )
 
-//test
 type (
 	// リクエストパラメータを埋め込む構造体
 	User struct {
