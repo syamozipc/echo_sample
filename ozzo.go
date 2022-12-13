@@ -2,17 +2,18 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
 	"net/http"
 )
 
 type (
 	OzzoUser struct {
-		Name  string `query:"name" json:"name"`
-		Email string `query:"email" json:"email"`
+		Id    uuid.UUID `query:"id" json:"id"`
+		Name  string    `query:"name" json:"name"`
+		Email string    `query:"email" json:"email"`
 	}
 
 	OzzoCustomValidator struct{}
@@ -26,8 +27,8 @@ func (cv *OzzoCustomValidator) Validate(i interface{}) error {
 }
 
 func (u OzzoUser) Validate() error {
-	fmt.Printf("%+v", u)
 	if err := validation.ValidateStruct(&u,
+		validation.Field(&u.Id, validation.Required.Error("IDは必須です"), is.UUID.Error("UUIDは正しい形式で指定してください")),
 		// Streetは空を許容せず、5から50までの長さ
 		validation.Field(&u.Name, validation.Required.Error("名前は必須です")),
 		// Cityは空を許容せず、5から50までの長さ
@@ -62,7 +63,6 @@ func main() {
 		if err = c.Bind(u); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-		fmt.Printf("%+v", u)
 
 		if err = c.Validate(u); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
