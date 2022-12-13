@@ -2,25 +2,24 @@
 
 ## バリデーション
 
-### 1. 以下のいずれかのバリデーションサンプルを立ち上げる
+### 1. バリデーションサンプルを立ち上げる
 
-go-playground validator（日本語対応）
 ```shell
-go run ja_playground.go
-```
-
-go-playground validator
-```shell
+# go-playground validator
 go run playground.go
-```
 
-Ozzo Validation
-```shell
+# Ozzo Validation
 go run ozzo.go
 ```
 
 ### 2. リクエストを送ってバリデーションが機能するか確認する 
 nameやemailを送らなかったり、無効なメール形式にしたり...etc
 ```shell
-http post http://localhost:1323/users name=test email=test@test.com
+# httpie
+http http http://localhost:1323/users\?name\=test
+http http://localhost:1323/users\?name\=test\&email\=test
+
+# curl
+curl http://localhost:1323/users\?name\=test\&email\=test 
+curl -X POST -d '{"name":"test", "email":"test"}' http://localhost:1323/users
 ```
