@@ -1,6 +1,7 @@
 package main
 
 import (
+	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 	"log"
 	"net/http"
 	"reflect"
@@ -11,7 +12,6 @@ import (
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 )
 
 type (
@@ -38,6 +38,11 @@ func InitValidator() echo.Validator {
 
 	validate := validator.New()
 
+	// エラーメッセージの日本語化
+	if err := jaTranslations.RegisterDefaultTranslations(validate, trans); err != nil {
+		log.Fatal(err)
+	}
+
 	// フィールド名の日本語化（jaタグを登録）
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
 		fieldName := field.Tag.Get("ja")
@@ -47,10 +52,8 @@ func InitValidator() echo.Validator {
 		return fieldName
 	})
 
-	// エラーメッセージの日本語化
-	if err := jaTranslations.RegisterDefaultTranslations(validate, trans); err != nil {
-		log.Fatal(err)
-	}
+	// カスタム型を登録
+	validate.RegisterCustomTypeFunc(ValidateUuidValuer, uuid.UUID{})
 
 	// カスタムバリデーションを登録
 	if err := validate.RegisterValidation("is-messi", ValidateIsMessi); err != nil {
@@ -77,6 +80,19 @@ func InitValidator() echo.Validator {
 // カスタムバリデーション
 func ValidateIsMessi(fl validator.FieldLevel) bool {
 	return fl.Field().String() == "messi"
+}
+
+// uuid.UUID型を登録
+func ValidateUuidValuer(field reflect.Value) interface{} {
+	if valuer, ok := field.Interface().(uuid.UUID); ok {
+		val, err := valuer.Value()
+		if err == nil {
+			return val
+		}
+		// handle the error how you want
+	}
+
+	return nil
 }
 
 // バリデーション処理
