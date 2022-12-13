@@ -2,14 +2,9 @@
 
 ## バリデーション
 
-### 1. バリデーションサンプルを立ち上げる
-
+### 1. アプリケーション立ち上げ
 ```shell
-# go-playground validator
-go run playground.go
-
-# Ozzo Validation
-go run ozzo.go
+go run main.go
 ```
 
 ### 2. リクエストを送ってバリデーションが機能するか確認する 

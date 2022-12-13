@@ -1,35 +1,21 @@
-package main
+package validation
 
 import (
-	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
-	"log"
-	"net/http"
-	"reflect"
-
-	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
+	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
+	"log"
+	"net/http"
+	"reflect"
 )
 
-type (
-	// リクエストパラメータを埋め込む構造体
-	User struct {
-		// validate：バリデーションの内容、ja：フィールドの日本語名、query：GETのクエリストリングのkey、json：POSTリクエストボディのkey
-		// is-messiはカスタムバリデーション
-		// uuidはstring型でないと正しくチェックできなそうなので、カスタマイズが必要そう
-		Id    uuid.UUID `query:"id" json:"id" validate:"required,uuid" ja:"ID"`
-		Name  string    `query:"name" json:"name" validate:"required,is-messi" ja:"ユーザー名"`
-		Email string    `query:"email" json:"email" validate:"required,email" ja:"メールアドレス"`
-	}
-
-	CustomValidator struct {
-		trans     ut.Translator
-		validator *validator.Validate
-	}
-)
+type CustomValidator struct {
+	trans     ut.Translator
+	validator *validator.Validate
+}
 
 func InitValidator() echo.Validator {
 	jaTrans := ja.New()
@@ -106,37 +92,4 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 		return echo.NewHTTPError(http.StatusBadRequest, messages)
 	}
 	return nil
-}
-
-func main() {
-	e := echo.New()
-	e.Validator = InitValidator()
-
-	e.GET("/users", func(c echo.Context) (err error) {
-		u := new(User)
-
-		if err = c.Bind(u); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-
-		if err = c.Validate(u); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-
-		return c.JSON(http.StatusOK, u)
-	})
-
-	e.POST("/users", func(c echo.Context) (err error) {
-		u := new(User)
-
-		if err = c.Bind(u); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-
-		if err = c.Validate(u); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		return c.JSON(http.StatusOK, u)
-	})
-	e.Logger.Fatal(e.Start(":1323"))
 }
