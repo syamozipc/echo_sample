@@ -12,7 +12,7 @@ type User struct {
 	// Null〇〇もBind失敗するので、ポインタ型でバリデーションし、domainなどへの詰め替え時にNull〇〇にする
 	Id     uuid.UUID `query:"id" json:"id" validate:"required" ja:"ID"`
 	Name   string    `query:"name" json:"name" validate:"required,is-messi" ja:"ユーザー名"`
-	Age    int       `query:"age" json:"age" validate:"required,number" ja:"年齢"`
+	Age    *int      `query:"age" json:"age" validate:"omitempty,number" ja:"年齢"`
 	Email  string    `query:"email" json:"email" validate:"required,email" ja:"メールアドレス"`
 	Gender *string   `query:"gender" json:"gender" validate:"omitempty,oneof=男性 女性 その他" ja:"性別"`
 }
