@@ -3,6 +3,7 @@ package main
 import (
 	"echo_sample/models"
 	"echo_sample/validation"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -15,6 +16,7 @@ func main() {
 		u := new(models.User)
 
 		if err = c.Bind(u); err != nil {
+			fmt.Println("bindエラー")
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
@@ -29,6 +31,7 @@ func main() {
 		u := new(models.User)
 
 		if err = c.Bind(u); err != nil {
+			fmt.Println("bindエラー")
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
