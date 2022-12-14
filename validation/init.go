@@ -3,6 +3,7 @@ package validation
 import (
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -10,8 +11,8 @@ import (
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
 	"log"
-	"net/http"
 	"reflect"
+	"strings"
 )
 
 type CustomValidator struct {
@@ -102,12 +103,12 @@ func ValidateSqlValuer(field reflect.Value) interface{} {
 // バリデーション処理
 func (cv *CustomValidator) Validate(i interface{}) error {
 	if err := cv.validator.Struct(i); err != nil {
-		var messages []string
+		var messages string
 		for _, m := range err.(validator.ValidationErrors).Translate(cv.trans) {
-			messages = append(messages, m)
+			messages += m + ";"
 		}
 		// Optionally, you could return the error to give each route more control over the status code
-		return echo.NewHTTPError(http.StatusBadRequest, messages)
+		return errors.New(strings.TrimSuffix(messages, ";"))
 	}
 	return nil
 }
