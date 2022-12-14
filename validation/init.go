@@ -1,6 +1,8 @@
 package validation
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -40,6 +42,7 @@ func InitValidator() echo.Validator {
 
 	// カスタム型を登録
 	validate.RegisterCustomTypeFunc(ValidateUuidValuer, uuid.UUID{})
+	validate.RegisterCustomTypeFunc(ValidateSqlValuer, sql.NullString{}, sql.NullInt64{}, sql.NullBool{}, sql.NullFloat64{})
 
 	// カスタムバリデーションを登録
 	if err := validate.RegisterValidation("is-messi", ValidateIsMessi); err != nil {
@@ -71,6 +74,21 @@ func ValidateIsMessi(fl validator.FieldLevel) bool {
 // uuid.UUID型を登録
 func ValidateUuidValuer(field reflect.Value) interface{} {
 	if valuer, ok := field.Interface().(uuid.UUID); ok {
+		val, err := valuer.Value()
+		if err == nil {
+			return val
+		}
+		// handle the error how you want
+	}
+
+	return nil
+}
+
+// ValidateValuer implements validator.CustomTypeFunc
+func ValidateSqlValuer(field reflect.Value) interface{} {
+
+	if valuer, ok := field.Interface().(driver.Valuer); ok {
+
 		val, err := valuer.Value()
 		if err == nil {
 			return val
