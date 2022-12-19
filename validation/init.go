@@ -105,10 +105,10 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	if err := cv.validator.Struct(i); err != nil {
 		var messages string
 		for _, m := range err.(validator.ValidationErrors).Translate(cv.trans) {
-			messages += m + ";"
+			messages += m + "; "
 		}
 		// Optionally, you could return the error to give each route more control over the status code
-		return errors.New(strings.TrimSuffix(messages, ";"))
+		return errors.New(strings.TrimSuffix(messages, "; "))
 	}
 	return nil
 }
