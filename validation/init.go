@@ -12,6 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"log"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -49,6 +50,20 @@ func InitValidator() echo.Validator {
 	if err := validate.RegisterValidation("is-messi", ValidateIsMessi); err != nil {
 		log.Fatal(err)
 	}
+	// 郵便番号チェック
+	if err := validate.RegisterValidation("postal_code", PostalCodeValidation); err != nil {
+		log.Fatal(err)
+	}
+
+	// 日付(yyyy-MM-dd形式)チェックエラーメッセージ
+	if err := validate.RegisterTranslation(
+		"postal_code",
+		trans,
+		registerTranslator("postal_code", "{0}は正しい郵便番号の形式で指定してください"),
+		translate,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// カスタムバリデーションの日本語エラーメッセージを登録
 	if err := validate.RegisterTranslation("is-messi", trans, func(ut ut.Translator) error {
@@ -65,6 +80,28 @@ func InitValidator() echo.Validator {
 		trans:     trans,
 		validator: validate,
 	}
+}
+
+func PostalCodeValidation(fl validator.FieldLevel) bool {
+	regex := regexp.MustCompile(`^\d{3}-?\d{4}$`)
+	return regex.MatchString(fl.Field().String())
+}
+
+func registerTranslator(tag string, msg string) validator.RegisterTranslationsFunc {
+	return func(trans ut.Translator) error {
+		if err := trans.Add(tag, msg, false); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func translate(trans ut.Translator, fe validator.FieldError) string {
+	msg, err := trans.T(fe.Tag(), fe.Field())
+	if err != nil {
+		panic(fe.(error).Error())
+	}
+	return msg
 }
 
 // カスタムバリデーション
