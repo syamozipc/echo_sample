@@ -1,6 +1,6 @@
 package models
 
-//リクエストパラメータを埋め込む構造体
+// リクエストパラメータを埋め込む構造体
 type User struct {
 	// query：GETのクエリストリングのkey、json：POSTリクエストボディのkey、pamam：パスパラメータ名、validate：バリデーションの内容、ja：フィールドの日本語名
 	// is-messiはカスタムバリデーション
@@ -32,16 +32,20 @@ type Aiu struct {
 }
 
 type Sample struct {
-	Int         int     `query:"int" validate:"required"`
-	PtrInt      *int    `query:"ptr_int" validate:"required"`
-	IntOmit     int     `query:"int_omit" validate:"omitempty,required"`
-	PtrIntOmit  *int    `query:"ptr_int_omit" validate:"omitempty,required"`
-	Str         string  `query:"str"`
-	Bool        bool    `query:"bool"`
-	StrOmit     string  `query:"str_omit,omitempty"`
-	BoolOmit    bool    `query:"bool_omit,omitempty"`
-	PtrStr      *string `query:"ptr_str"`
-	PtrBool     *bool   `query:"ptr_bool"`
-	PtrStrOmit  *string `query:"ptr_str_omit"`
-	PtrBoolOmit *bool   `query:"ptr_bool_omit"`
+	ID   string `json:"id" validate:"omitempty" ja:"ID1"`
+	Name string `json:"name" validate:"omitempty" ja:"name1"`
+	// point型なら、nullかkeyなしでゼロ値（nil）となるため、required/mitemptyが機能する
+	// omitemptyの場合はその構造体のフィールドのバリデーションまで行かない
+	// {}ではゼロ値でなくなってしまうので注意
+	Sample2 *Sample2 `json:"sample2" validate:"omitempty"`
+	// 値型の場合、nullでもkeyなしでもrequiredを必ず通過し、omitemptyには絶対当てはまらず、意図した挙動にならない
+	Sample3 Sample3 `json:"sample3" validate:"omitempty"`
+}
+type Sample2 struct {
+	ID   string `json:"id2" validate:"required" ja:"ID2"`
+	Name string `json:"name2" validate:"omitempty" ja:"name2"`
+}
+type Sample3 struct {
+	ID   *string `json:"id3" validate:"required" ja:"ID3"`
+	Name *string `json:"name3" validate:"omitempty" ja:"name3"`
 }

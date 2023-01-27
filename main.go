@@ -13,7 +13,7 @@ func main() {
 	e := echo.New()
 	e.Validator = validation.InitValidator()
 
-	e.GET("/sample", func(c echo.Context) (err error) {
+	e.POST("/sample", func(c echo.Context) (err error) {
 		u := new(models.Sample)
 
 		if err = c.Bind(u); err != nil {
