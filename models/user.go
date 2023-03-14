@@ -49,3 +49,29 @@ type Sample3 struct {
 	ID   *string `json:"id3" validate:"required" ja:"ID3"`
 	Name *string `json:"name3" validate:"omitempty" ja:"name3"`
 }
+
+/*
+レスポンスの考え方
+- オプショナル項目だけomitemptyをつける
+- オプショナルかつゼロ値を返す場合はポインタ型にする（omitemptyで弾かれない様にするため）
+- オプショナルな構造体は全てポインタ型（値型だとomitemptyが効かない）
+- スライスは空配列で返す（models.NestSlice{}のように要素数0のスライスで初期化）
+*/
+type SampleRes struct {
+	// 構造体（コメントはreturn値）
+	Nest        Nest  `json:"nest"`                  // Nest構造体
+	NestPtr     *Nest `json:"nestPtr"`               // 未代入（nil）：ゼロ値であるnull、他：Nest構造体
+	NestOmit    Nest  `json:"nestOmit,omitempty"`    // Nest構造体（値型struct自体はゼロ値にならないのでプロパティ削除は起こらない）
+	NestOmitPtr *Nest `json:"nestOmitPtr,omitempty"` // 未代入（nil）：プロパティ自体を削除、他：Nest構造体
+	// スライス（コメントはreturn値）
+	NestSclie        NestSlice  `json:"nestSlice"`                  // 未代入（nil）：nullが返る、他：Nestスライス
+	NestScliePtr     *NestSlice `json:"nestSlicePtr"`               // 未代入（nil）：nullが返る、他：Nestスライス
+	NestSclieOmit    NestSlice  `json:"nestSliceOmit,omitempty"`    // 未代入（nil）：プロパティ自体を削除、他：Nest構造体
+	NestSclieOmitPtr *NestSlice `json:"nestSliceOmitPtr,omitempty"` // 未代入（nil）：プロパティ自体を削除、他：Nest構造体
+}
+type Nest struct {
+	Content    string  `json:"content"`
+	PtrContent *string `json:"ptrContent"`
+}
+
+type NestSlice []Nest

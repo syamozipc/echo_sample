@@ -29,6 +29,11 @@ func main() {
 		return c.JSON(http.StatusOK, u)
 	})
 
+	e.POST("/sampleRes", func(c echo.Context) (err error) {
+		res := models.SampleRes{}
+		return c.JSON(http.StatusOK, res)
+	})
+
 	e.GET("/users", func(c echo.Context) (err error) {
 		u := new(models.User)
 
