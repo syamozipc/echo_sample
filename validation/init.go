@@ -4,16 +4,18 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"log"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/go-playground/locales/ja"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	jaTranslations "github.com/go-playground/validator/v10/translations/ja"
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
-	"log"
-	"reflect"
-	"regexp"
-	"strings"
 )
 
 type CustomValidator struct {
@@ -54,12 +56,39 @@ func InitValidator() echo.Validator {
 	if err := validate.RegisterValidation("postal_code", PostalCodeValidation); err != nil {
 		log.Fatal(err)
 	}
+	// 比較対象がnilの時のless than
+	if err := validate.RegisterValidation("ltfield_if_Max_is_explicit", ValidateLessThanIfMaxIsExplicit); err != nil {
+		log.Fatal(err)
+	}
+	// 比較対象がnilの時のless than
+	if err := validate.RegisterValidation("exculded_if_for_bool", ValidateExcludedIfForBool); err != nil {
+		log.Fatal(err)
+	}
 
 	// 日付(yyyy-MM-dd形式)チェックエラーメッセージ
 	if err := validate.RegisterTranslation(
 		"postal_code",
 		trans,
 		registerTranslator("postal_code", "{0}は正しい郵便番号の形式で指定してください"),
+		translate,
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	// ltnilfieldチェックエラーメッセージ
+	if err := validate.RegisterTranslation(
+		"ltfield_if_Max_is_explicit",
+		trans,
+		registerTranslator("ltfield_if_Max_is_explicit", "{0}は最大数よりも小さくなければなりません"),
+		translate,
+	); err != nil {
+		log.Fatal(err)
+	}
+	// ltnilfieldチェックエラーメッセージ
+	if err := validate.RegisterTranslation(
+		"exculded_if_for_bool",
+		trans,
+		registerTranslator("exculded_if_for_bool", "{0}は入力不要です"),
 		translate,
 	); err != nil {
 		log.Fatal(err)
@@ -107,6 +136,37 @@ func translate(trans ut.Translator, fe validator.FieldError) string {
 // カスタムバリデーション
 func ValidateIsMessi(fl validator.FieldLevel) bool {
 	return fl.Field().String() == "messi"
+}
+
+// カスタムバリデーション
+func ValidateLessThanIfMaxIsExplicit(fl validator.FieldLevel) bool {
+	curr := fl.Field()
+	cmp := fl.Parent().FieldByName(fl.Param())
+	cmpType := cmp.Kind().String()
+
+	switch {
+	case cmpType == "ptr" && cmp.IsNil():
+		return true
+	case cmpType == "ptr" && (curr.Int() < cmp.Elem().Int()):
+		return true
+	case cmp.CanInt() && (curr.Int() < cmp.Int()):
+		return true
+	default:
+		return false
+	}
+}
+
+// カスタムバリデーション
+func ValidateExcludedIfForBool(fl validator.FieldLevel) bool {
+	paramSlice := strings.Split(fl.Param(), " ")
+	cmpField := fl.Parent().FieldByName(paramSlice[0])
+	boolStr := paramSlice[1]
+
+	if boolStr == strconv.FormatBool(cmpField.Elem().Bool()) {
+		return fl.Field().IsZero()
+	}
+
+	return true
 }
 
 // uuid.UUID型を登録

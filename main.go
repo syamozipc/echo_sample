@@ -13,14 +13,14 @@ func main() {
 	e := echo.New()
 	e.Validator = validation.InitValidator()
 
-	e.POST("/sample", func(c echo.Context) (err error) {
-		u := new(models.Sample)
+	e.POST("/sample2", func(c echo.Context) (err error) {
+		u := new(models.Sample2)
 
 		if err = c.Bind(u); err != nil {
 			fmt.Println("bindエラー")
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-		fmt.Printf("%#v", u)
+		// fmt.Printf("%#v\n", u)
 
 		if err = c.Validate(u); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())

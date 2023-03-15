@@ -32,18 +32,12 @@ type Aiu struct {
 }
 
 type Sample struct {
-	ID   string `json:"id" validate:"omitempty" ja:"ID1"`
-	Name string `json:"name" validate:"omitempty" ja:"name1"`
-	// point型なら、nullかkeyなしでゼロ値（nil）となるため、required/mitemptyが機能する
-	// omitemptyの場合はその構造体のフィールドのバリデーションまで行かない
-	// {}ではゼロ値でなくなってしまうので注意
-	Sample2 *Sample2 `json:"sample2" validate:"omitempty"`
-	// 値型の場合、nullでもkeyなしでもrequiredを必ず通過し、omitemptyには絶対当てはまらず、意図した挙動にならない
-	Sample3 Sample3 `json:"sample3" validate:"omitempty"`
+	Num1 *int `json:"num1" validate:"omitempty,ltfield_if_Max_is_explicit=Num2" ja:"num1"`
+	Num2 *int `json:"num2" validate:"omitempty" ja:"num2"`
 }
 type Sample2 struct {
-	ID   string `json:"id2" validate:"required" ja:"ID2"`
-	Name string `json:"name2" validate:"omitempty" ja:"name2"`
+	Name *string `json:"name" validate:"required_if=Flg false,exculded_if_for_bool=Flg true" ja:"名前"`
+	Flg  *bool   `json:"flg" validate:"omitempty" ja:"フラグ"`
 }
 type Sample3 struct {
 	ID   *string `json:"id3" validate:"required" ja:"ID3"`
